@@ -373,10 +373,7 @@ let pdfBase64 = doc.output('datauristring').split(',')[1]
 fetch("https://script.google.com/macros/s/AKfycbwYXvZLTdAW156Smmt-adSTpNUQ4epITnClG1YcZcy1mnjuO_XSjtjTYkeSvzv7QZ-UNw/exec",{
 
 method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
+mode:"no-cors",
 
 body:JSON.stringify({
 
