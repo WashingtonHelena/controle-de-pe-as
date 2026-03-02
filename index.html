@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 
 <meta charset="UTF-8">
 <title>Controle de Retirada de Peças</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
 <style>
 
@@ -45,6 +47,7 @@ color:#2c3e50;
 display:flex;
 gap:10px;
 margin-bottom:20px;
+flex-wrap:wrap;
 }
 
 input,select{
@@ -162,7 +165,7 @@ document.getElementById("codigo").addEventListener("keypress",function(e){
 
 if(e.key==="Enter"){
 
-let codigo=this.value
+let codigo=this.value.trim()
 let qtd=document.getElementById("quantidade").value
 
 let produto=produtos.find(p=>p.codigo==codigo)
@@ -221,108 +224,106 @@ render()
 function gerarPDF(){
 
 const {jsPDF}=window.jspdf
+
 let doc=new jsPDF()
 
 let mecanico=document.getElementById("mecanico").value
 let data=new Date().toLocaleDateString()
 
-doc.setFontSize(18)
-doc.text("SILOKING DO BRASIL",70,20)
+doc.setFillColor(44,123,229)
+doc.rect(0,0,210,30,"F")
 
-doc.setFontSize(13)
-doc.text("Controle de Retirada de Peças",70,28)
+doc.setTextColor(255,255,255)
+doc.setFontSize(18)
+doc.text("SILOKING DO BRASIL",105,15,{align:"center"})
+
+doc.setFontSize(12)
+doc.text("Controle de Retirada de Peças",105,23,{align:"center"})
+
+doc.setTextColor(0,0,0)
 
 doc.setFontSize(11)
 
-doc.text("Mecânico: "+mecanico,20,45)
-doc.text("Data retirada: "+data,20,52)
+doc.text("Mecânico: "+mecanico,14,40)
+doc.text("Data retirada: "+data,14,47)
 
-doc.line(20,55,190,55)
+let dados=retirada.map(i=>[
+i.codigo,
+i.nome,
+i.quantidade
+])
 
-let y=65
+doc.autoTable({
 
-doc.text("CÓDIGO",20,y)
-doc.text("PRODUTO",60,y)
-doc.text("QTD",180,y)
+startY:55,
 
-y+=5
-doc.line(20,y,190,y)
+head:[["Código","Produto","Quantidade"]],
 
-y+=5
+body:dados,
 
-retirada.forEach(i=>{
+theme:"grid",
 
-doc.text(String(i.codigo),20,y)
-doc.text(i.nome.substring(0,40),60,y)
-doc.text(String(i.quantidade),180,y)
-
-y+=8
+headStyles:{
+fillColor:[44,123,229]
+}
 
 })
 
-y+=10
-doc.line(20,y,190,y)
-
-y+=10
+let y=doc.lastAutoTable.finalY+10
 
 doc.setFontSize(12)
-doc.text("RETIRADA",20,y)
+doc.text("RETIRADA",14,y)
 
 y+=10
 
 doc.setFontSize(11)
 
-doc.text("Assinatura Mecânico:",20,y)
-doc.line(70,y,150,y)
+doc.text("Assinatura Mecânico:",14,y)
+doc.line(60,y,150,y)
 
 y+=15
 
-doc.text("Responsável Estoque:",20,y)
-doc.line(75,y,150,y)
+doc.text("Responsável Estoque:",14,y)
+doc.line(70,y,150,y)
 
 y+=20
 
-doc.line(20,y,190,y)
-
-y+=10
-
 doc.setFontSize(12)
-doc.text("DEVOLUÇÃO",20,y)
+doc.text("DEVOLUÇÃO",14,y)
 
 y+=10
 
-doc.setFontSize(11)
+doc.text("Data retorno: ____ / ____ / ______",14,y)
 
-doc.text("Data retorno: ____ / ____ / ______",20,y)
+let retorno=retirada.map(i=>[
+i.codigo,""
+])
 
-y+=10
+doc.autoTable({
 
-doc.text("Código",20,y)
-doc.text("Qtd retornada",60,y)
+startY:y+5,
 
-y+=5
-doc.line(20,y,120,y)
+head:[["Código","Quantidade retornada"]],
 
-y+=5
+body:retorno,
 
-retirada.forEach(i=>{
+theme:"grid",
 
-doc.text(String(i.codigo),20,y)
-doc.text("________",60,y)
-
-y+=8
+headStyles:{
+fillColor:[44,123,229]
+}
 
 })
 
-y+=10
+y=doc.lastAutoTable.finalY+10
 
-doc.text("Assinatura Mecânico:",20,y)
-doc.line(70,y,150,y)
+doc.text("Assinatura Mecânico:",14,y)
+doc.line(60,y,150,y)
 
 y+=15
 
-doc.text("Responsável Estoque:",20,y)
-doc.line(75,y,150,y)
+doc.text("Responsável Estoque:",14,y)
+doc.line(70,y,150,y)
 
 doc.save("retirada_pecas.pdf")
 
@@ -334,4 +335,5 @@ render()
 </script>
 
 </body>
+
 </html>
