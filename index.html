@@ -3,6 +3,8 @@
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Controle de Retirada de Peças</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -81,7 +83,7 @@ text-align:center;
 }
 
 .qtdInput{
-width:60px;
+width:70px;
 text-align:center;
 }
 
@@ -96,7 +98,7 @@ cursor:pointer;
 
 .btn{
 margin-top:15px;
-padding:12px 20px;
+padding:12px;
 background:#27ae60;
 color:white;
 border:none;
@@ -104,6 +106,14 @@ border-radius:5px;
 cursor:pointer;
 font-size:16px;
 width:100%;
+}
+
+@media(max-width:600px){
+
+h1{
+font-size:18px;
+}
+
 }
 
 </style>
@@ -115,7 +125,7 @@ width:100%;
 
 <div class="top">
 
-<img src="logo_siloking.png" class="logo">
+<img src="https://siloking.com/wp-content/uploads/2020/09/SILOKING-Logo.png" class="logo">
 
 <h1>Controle de Retirada de Peças</h1>
 
@@ -230,16 +240,12 @@ onchange="alterarQtd(${index},this.value)">
 }
 
 function alterarQtd(i,v){
-
 retirada[i].quantidade=v
-
 }
 
 function remover(i){
-
 retirada.splice(i,1)
 render()
-
 }
 
 function gerarPDF(){
@@ -367,6 +373,10 @@ let pdfBase64 = doc.output('datauristring').split(',')[1]
 fetch("https://script.google.com/macros/s/AKfycbyJSsOUMskuitVuWqvcnv8MuekJbmZ4Ja3bid9o4SiNcLplakBU_ClKH-40a0-_mdwddg/exec",{
 
 method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
 
 body:JSON.stringify({
 
