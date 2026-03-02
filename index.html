@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
+
 <meta charset="UTF-8">
 <title>Controle de Retirada de Peças</title>
 
@@ -25,15 +25,10 @@ border-radius:10px;
 box-shadow:0 5px 15px rgba(0,0,0,0.1);
 }
 
-h1{
-text-align:center;
-color:#2c3e50;
-}
-
 .top{
 display:flex;
-justify-content:space-between;
 align-items:center;
+gap:20px;
 margin-bottom:20px;
 }
 
@@ -41,24 +36,27 @@ margin-bottom:20px;
 height:60px;
 }
 
+h1{
+margin:0;
+color:#2c3e50;
+}
+
 .inputs{
 display:flex;
 gap:10px;
-flex-wrap:wrap;
 margin-bottom:20px;
 }
 
 input,select{
 padding:10px;
 font-size:16px;
-border:1px solid #ccc;
 border-radius:5px;
+border:1px solid #ccc;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:20px;
 }
 
 th{
@@ -78,22 +76,23 @@ background:#e74c3c;
 color:white;
 border:none;
 padding:5px 10px;
-cursor:pointer;
 border-radius:4px;
+cursor:pointer;
 }
 
 .btn{
 margin-top:20px;
 padding:12px 20px;
-font-size:16px;
 background:#27ae60;
 color:white;
 border:none;
 border-radius:5px;
 cursor:pointer;
+font-size:16px;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -102,8 +101,7 @@ cursor:pointer;
 
 <div class="top">
 
-<img class="logo"
-src="https://upload.wikimedia.org/wikipedia/commons/7/7f/Siloking_logo.svg">
+<img src="logo_siloking.png" class="logo">
 
 <h1>Controle de Retirada de Peças</h1>
 
@@ -199,17 +197,12 @@ retirada.forEach((item,index)=>{
 tabela.innerHTML+=`
 
 <tr>
-
 <td>${item.codigo}</td>
-
 <td>${item.nome}</td>
-
 <td>${item.quantidade}</td>
-
 <td>
 <button class="remover" onclick="remover(${index})">Remover</button>
 </td>
-
 </tr>
 
 `
@@ -236,55 +229,100 @@ let data=new Date().toLocaleDateString()
 doc.setFontSize(18)
 doc.text("SILOKING DO BRASIL",70,20)
 
-doc.setFontSize(14)
-doc.text("Controle de Retirada de Peças",60,30)
+doc.setFontSize(13)
+doc.text("Controle de Retirada de Peças",70,28)
 
 doc.setFontSize(11)
 
 doc.text("Mecânico: "+mecanico,20,45)
-doc.text("Data Retirada: "+data,20,52)
+doc.text("Data retirada: "+data,20,52)
+
+doc.line(20,55,190,55)
 
 let y=65
 
-doc.text("Código",20,y)
-doc.text("Produto",50,y)
-doc.text("Qtd",180,y)
+doc.text("CÓDIGO",20,y)
+doc.text("PRODUTO",60,y)
+doc.text("QTD",180,y)
+
+y+=5
+doc.line(20,y,190,y)
 
 y+=5
 
 retirada.forEach(i=>{
 
 doc.text(String(i.codigo),20,y)
-doc.text(i.nome.substring(0,35),50,y)
+doc.text(i.nome.substring(0,40),60,y)
 doc.text(String(i.quantidade),180,y)
 
-y+=7
+y+=8
 
 })
 
-y+=15
-
-doc.text("Assinatura Mecânico (Retirada): __________________________",20,y)
-
-y+=15
-
-doc.text("Responsável Estoque: __________________________",20,y)
-
-y+=20
-
-doc.text("Data Retorno: ____ / ____ / ______",20,y)
+y+=10
+doc.line(20,y,190,y)
 
 y+=10
 
-doc.text("Quantidade retornada:",20,y)
+doc.setFontSize(12)
+doc.text("RETIRADA",20,y)
+
+y+=10
+
+doc.setFontSize(11)
+
+doc.text("Assinatura Mecânico:",20,y)
+doc.line(70,y,150,y)
 
 y+=15
 
-doc.text("Assinatura Mecânico (Retorno): __________________________",20,y)
+doc.text("Responsável Estoque:",20,y)
+doc.line(75,y,150,y)
+
+y+=20
+
+doc.line(20,y,190,y)
+
+y+=10
+
+doc.setFontSize(12)
+doc.text("DEVOLUÇÃO",20,y)
+
+y+=10
+
+doc.setFontSize(11)
+
+doc.text("Data retorno: ____ / ____ / ______",20,y)
+
+y+=10
+
+doc.text("Código",20,y)
+doc.text("Qtd retornada",60,y)
+
+y+=5
+doc.line(20,y,120,y)
+
+y+=5
+
+retirada.forEach(i=>{
+
+doc.text(String(i.codigo),20,y)
+doc.text("________",60,y)
+
+y+=8
+
+})
+
+y+=10
+
+doc.text("Assinatura Mecânico:",20,y)
+doc.line(70,y,150,y)
 
 y+=15
 
-doc.text("Responsável Estoque: __________________________",20,y)
+doc.text("Responsável Estoque:",20,y)
+doc.line(75,y,150,y)
 
 doc.save("retirada_pecas.pdf")
 
