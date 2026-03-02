@@ -106,22 +106,6 @@ font-size:16px;
 width:100%;
 }
 
-@media(max-width:600px){
-
-h1{
-font-size:18px;
-}
-
-.logo{
-height:40px;
-}
-
-td{
-font-size:13px;
-}
-
-}
-
 </style>
 </head>
 
@@ -302,9 +286,7 @@ body:dados,
 
 theme:"grid",
 
-styles:{
-lineWidth:0.5
-},
+styles:{lineWidth:0.5},
 
 headStyles:{
 fillColor:[44,123,229],
@@ -357,9 +339,7 @@ body:retorno,
 
 theme:"grid",
 
-styles:{
-lineWidth:0.5
-},
+styles:{lineWidth:0.5},
 
 headStyles:{
 fillColor:[44,123,229],
@@ -381,6 +361,23 @@ doc.line(70,y,170,y)
 let nomeArquivo="retirada_"+mecanico+"_"+data.replaceAll("/","-")+".pdf"
 
 doc.save(nomeArquivo)
+
+let pdfBase64 = doc.output('datauristring').split(',')[1]
+
+fetch("https://script.google.com/macros/s/AKfycbyJSsOUMskuitVuWqvcnv8MuekJbmZ4Ja3bid9o4SiNcLplakBU_ClKH-40a0-_mdwddg/exec",{
+
+method:"POST",
+
+body:JSON.stringify({
+
+pdf:pdfBase64,
+nome:nomeArquivo,
+data:data,
+mecanico:mecanico
+
+})
+
+})
 
 retirada=[]
 render()
