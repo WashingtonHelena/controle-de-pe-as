@@ -1,44 +1,57 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 <meta charset="UTF-8">
 <title>Controle de Retirada de Peças</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 
 body{
-font-family: Arial;
-background:#f4f4f4;
+font-family:Arial;
+background:#eef2f6;
 margin:0;
 padding:20px;
 }
 
 .container{
-max-width:900px;
+max-width:1000px;
 margin:auto;
 background:white;
-padding:20px;
-border-radius:8px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
+padding:30px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
 }
 
 h1{
 text-align:center;
+color:#2c3e50;
+}
+
+.top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.logo{
+height:60px;
+}
+
+.inputs{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:20px;
 }
 
 input,select{
-padding:8px;
+padding:10px;
 font-size:16px;
-margin:5px;
-}
-
-button{
-padding:10px 15px;
-font-size:16px;
-cursor:pointer;
-background:#2c7be5;
-color:white;
-border:none;
+border:1px solid #ccc;
 border-radius:5px;
 }
 
@@ -48,15 +61,36 @@ border-collapse:collapse;
 margin-top:20px;
 }
 
-table th, table td{
-border:1px solid #ccc;
+th{
+background:#2c7be5;
+color:white;
+padding:10px;
+}
+
+td{
+border:1px solid #ddd;
 padding:8px;
 text-align:center;
 }
 
-.logo{
-text-align:center;
-margin-bottom:10px;
+.remover{
+background:#e74c3c;
+color:white;
+border:none;
+padding:5px 10px;
+cursor:pointer;
+border-radius:4px;
+}
+
+.btn{
+margin-top:20px;
+padding:12px 20px;
+font-size:16px;
+background:#27ae60;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
 }
 
 </style>
@@ -66,12 +100,16 @@ margin-bottom:10px;
 
 <div class="container">
 
-<div class="logo">
-<h1>SILOKING DO BRASIL</h1>
-<h3>Controle de Retirada de Peças</h3>
+<div class="top">
+
+<img class="logo"
+src="https://upload.wikimedia.org/wikipedia/commons/7/7f/Siloking_logo.svg">
+
+<h1>Controle de Retirada de Peças</h1>
+
 </div>
 
-<label>Mecânico:</label>
+<div class="inputs">
 
 <select id="mecanico">
 
@@ -88,15 +126,11 @@ margin-bottom:10px;
 
 </select>
 
-<br>
+<input id="codigo" placeholder="Bipar código">
 
-<label>Bipar Código:</label>
-<input type="text" id="codigo">
+<input id="quantidade" type="number" value="1">
 
-<label>Quantidade:</label>
-<input type="number" id="quantidade" value="1">
-
-<button onclick="adicionarItem()">Adicionar</button>
+</div>
 
 <table>
 
@@ -105,6 +139,7 @@ margin-bottom:10px;
 <th>Código</th>
 <th>Produto</th>
 <th>Quantidade</th>
+<th>Ação</th>
 </tr>
 </thead>
 
@@ -112,9 +147,7 @@ margin-bottom:10px;
 
 </table>
 
-<br>
-
-<button onclick="gerarRelatorio()">Gerar Relatório</button>
+<button class="btn" onclick="gerarPDF()">Gerar PDF</button>
 
 </div>
 
@@ -123,15 +156,15 @@ margin-bottom:10px;
 let produtos=[]
 let retirada=[]
 
-fetch('produtos_base_completa.json')
+fetch("produtos_base_completa.json")
 .then(r=>r.json())
-.then(data=>{
-produtos=data
-})
+.then(data=>produtos=data)
 
-function adicionarItem(){
+document.getElementById("codigo").addEventListener("keypress",function(e){
 
-let codigo=document.getElementById("codigo").value
+if(e.key==="Enter"){
+
+let codigo=this.value
 let qtd=document.getElementById("quantidade").value
 
 let produto=produtos.find(p=>p.codigo==codigo)
@@ -147,114 +180,116 @@ nome:produto.nome,
 quantidade:qtd
 })
 
-renderTabela()
+render()
 
-document.getElementById("codigo").value=""
+this.value=""
 document.getElementById("quantidade").value=1
 
 }
 
-function renderTabela(){
+})
+
+function render(){
 
 let tabela=document.getElementById("lista")
 tabela.innerHTML=""
 
-retirada.forEach(item=>{
+retirada.forEach((item,index)=>{
 
-let linha=`
+tabela.innerHTML+=`
+
 <tr>
-<td>${item.codigo}</td>
-<td>${item.nome}</td>
-<td>${item.quantidade}</td>
-</tr>
-`
 
-tabela.innerHTML+=linha
+<td>${item.codigo}</td>
+
+<td>${item.nome}</td>
+
+<td>${item.quantidade}</td>
+
+<td>
+<button class="remover" onclick="remover(${index})">Remover</button>
+</td>
+
+</tr>
+
+`
 
 })
 
 }
 
-function gerarRelatorio(){
+function remover(i){
+
+retirada.splice(i,1)
+render()
+
+}
+
+function gerarPDF(){
+
+const {jsPDF}=window.jspdf
+let doc=new jsPDF()
 
 let mecanico=document.getElementById("mecanico").value
 let data=new Date().toLocaleDateString()
 
-let itens=""
+doc.setFontSize(18)
+doc.text("SILOKING DO BRASIL",70,20)
+
+doc.setFontSize(14)
+doc.text("Controle de Retirada de Peças",60,30)
+
+doc.setFontSize(11)
+
+doc.text("Mecânico: "+mecanico,20,45)
+doc.text("Data Retirada: "+data,20,52)
+
+let y=65
+
+doc.text("Código",20,y)
+doc.text("Produto",50,y)
+doc.text("Qtd",180,y)
+
+y+=5
 
 retirada.forEach(i=>{
 
-itens+=`
-<tr>
-<td>${i.codigo}</td>
-<td>${i.nome}</td>
-<td>${i.quantidade}</td>
-</tr>
-`
+doc.text(String(i.codigo),20,y)
+doc.text(i.nome.substring(0,35),50,y)
+doc.text(String(i.quantidade),180,y)
+
+y+=7
 
 })
 
-let janela=window.open("")
+y+=15
 
-janela.document.write(`
+doc.text("Assinatura Mecânico (Retirada): __________________________",20,y)
 
-<h2 style="text-align:center;">SILOKING DO BRASIL</h2>
+y+=15
 
-<h3 style="text-align:center;">Controle de Retirada de Peças</h3>
+doc.text("Responsável Estoque: __________________________",20,y)
 
-<p><b>Mecânico:</b> ${mecanico}</p>
+y+=20
 
-<p><b>Data Retirada:</b> ${data}</p>
+doc.text("Data Retorno: ____ / ____ / ______",20,y)
 
-<table border="1" width="100%" style="border-collapse:collapse">
+y+=10
 
-<tr>
-<th>Código</th>
-<th>Produto</th>
-<th>Quantidade</th>
-</tr>
+doc.text("Quantidade retornada:",20,y)
 
-${itens}
+y+=15
 
-</table>
+doc.text("Assinatura Mecânico (Retorno): __________________________",20,y)
 
-<br><br>
+y+=15
 
-<h3>Assinatura Retirada</h3>
+doc.text("Responsável Estoque: __________________________",20,y)
 
-<p>Mecânico: __________________________</p>
-
-<p>Responsável Estoque: __________________________</p>
-
-<br><br>
-
-<h3>Retorno das Peças</h3>
-
-<p>Data Retorno: ____ / ____ / ______</p>
-
-<table border="1" width="100%" style="border-collapse:collapse">
-
-<tr>
-<th>Código</th>
-<th>Quantidade Retornada</th>
-</tr>
-
-${retirada.map(i=>`<tr><td>${i.codigo}</td><td></td></tr>`).join("")}
-
-</table>
-
-<br><br>
-
-<p>Mecânico: __________________________</p>
-
-<p>Responsável Estoque: __________________________</p>
-
-`)
-
-janela.print()
+doc.save("retirada_pecas.pdf")
 
 retirada=[]
-renderTabela()
+render()
 
 }
 
