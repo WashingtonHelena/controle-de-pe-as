@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Controle de Retirada de Peças</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f4f4f4;
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h1{
+text-align:center;
+}
+
+input,select{
+padding:8px;
+font-size:16px;
+margin:5px;
+}
+
+button{
+padding:10px 15px;
+font-size:16px;
+cursor:pointer;
+background:#2c7be5;
+color:white;
+border:none;
+border-radius:5px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+table th, table td{
+border:1px solid #ccc;
+padding:8px;
+text-align:center;
+}
+
+.logo{
+text-align:center;
+margin-bottom:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="logo">
+<h1>SILOKING DO BRASIL</h1>
+<h3>Controle de Retirada de Peças</h3>
+</div>
+
+<label>Mecânico:</label>
+
+<select id="mecanico">
+
+<option>ANTONIO</option>
+<option>RENATO</option>
+<option>MAURICIO</option>
+<option>ALAN</option>
+<option>DANIEL</option>
+<option>DANILO</option>
+<option>LUCAS</option>
+<option>WILLIAM</option>
+<option>JOSE ROBERTO</option>
+<option>AGNALDO</option>
+
+</select>
+
+<br>
+
+<label>Bipar Código:</label>
+<input type="text" id="codigo">
+
+<label>Quantidade:</label>
+<input type="number" id="quantidade" value="1">
+
+<button onclick="adicionarItem()">Adicionar</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Código</th>
+<th>Produto</th>
+<th>Quantidade</th>
+</tr>
+</thead>
+
+<tbody id="lista"></tbody>
+
+</table>
+
+<br>
+
+<button onclick="gerarRelatorio()">Gerar Relatório</button>
+
+</div>
+
+<script>
+
+let produtos=[]
+let retirada=[]
+
+fetch('produtos_base_completa.json')
+.then(r=>r.json())
+.then(data=>{
+produtos=data
+})
+
+function adicionarItem(){
+
+let codigo=document.getElementById("codigo").value
+let qtd=document.getElementById("quantidade").value
+
+let produto=produtos.find(p=>p.codigo==codigo)
+
+if(!produto){
+alert("Produto não encontrado")
+return
+}
+
+retirada.push({
+codigo:produto.codigo,
+nome:produto.nome,
+quantidade:qtd
+})
+
+renderTabela()
+
+document.getElementById("codigo").value=""
+document.getElementById("quantidade").value=1
+
+}
+
+function renderTabela(){
+
+let tabela=document.getElementById("lista")
+tabela.innerHTML=""
+
+retirada.forEach(item=>{
+
+let linha=`
+<tr>
+<td>${item.codigo}</td>
+<td>${item.nome}</td>
+<td>${item.quantidade}</td>
+</tr>
+`
+
+tabela.innerHTML+=linha
+
+})
+
+}
+
+function gerarRelatorio(){
+
+let mecanico=document.getElementById("mecanico").value
+let data=new Date().toLocaleDateString()
+
+let itens=""
+
+retirada.forEach(i=>{
+
+itens+=`
+<tr>
+<td>${i.codigo}</td>
+<td>${i.nome}</td>
+<td>${i.quantidade}</td>
+</tr>
+`
+
+})
+
+let janela=window.open("")
+
+janela.document.write(`
+
+<h2 style="text-align:center;">SILOKING DO BRASIL</h2>
+
+<h3 style="text-align:center;">Controle de Retirada de Peças</h3>
+
+<p><b>Mecânico:</b> ${mecanico}</p>
+
+<p><b>Data Retirada:</b> ${data}</p>
+
+<table border="1" width="100%" style="border-collapse:collapse">
+
+<tr>
+<th>Código</th>
+<th>Produto</th>
+<th>Quantidade</th>
+</tr>
+
+${itens}
+
+</table>
+
+<br><br>
+
+<h3>Assinatura Retirada</h3>
+
+<p>Mecânico: __________________________</p>
+
+<p>Responsável Estoque: __________________________</p>
+
+<br><br>
+
+<h3>Retorno das Peças</h3>
+
+<p>Data Retorno: ____ / ____ / ______</p>
+
+<table border="1" width="100%" style="border-collapse:collapse">
+
+<tr>
+<th>Código</th>
+<th>Quantidade Retornada</th>
+</tr>
+
+${retirada.map(i=>`<tr><td>${i.codigo}</td><td></td></tr>`).join("")}
+
+</table>
+
+<br><br>
+
+<p>Mecânico: __________________________</p>
+
+<p>Responsável Estoque: __________________________</p>
+
+`)
+
+janela.print()
+
+retirada=[]
+renderTabela()
+
+}
+
+</script>
+
+</body>
+</html>
