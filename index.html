@@ -77,35 +77,67 @@ padding:10px;
 }
 
 td{
-border:2px solid #444;
+border:1px solid #ddd;
 padding:8px;
 text-align:center;
 }
 
-.qtdInput{
-width:80px;
-text-align:center;
+tr:hover{
+background:#f5f9ff;
 }
 
-.remover{
-background:#e74c3c;
-color:white;
-border:none;
-padding:6px 10px;
+.qtdInput{
+width:60px;
+text-align:center;
+border:1px solid #ccc;
 border-radius:4px;
+}
+
+.btnQtd{
+padding:6px 10px;
+border:none;
+border-radius:5px;
 cursor:pointer;
+font-weight:bold;
+transition:0.2s;
+}
+
+.btnMais{
+background:#2c7be5;
+color:white;
+}
+
+.btnMenos{
+background:#ccc;
+}
+
+.btnQtd:active{
+transform:scale(0.9);
+}
+
+.resumo{
+margin:15px 0;
+padding:10px;
+background:#f1f6ff;
+border-left:5px solid #2c7be5;
+font-weight:bold;
 }
 
 .btn{
 margin-top:15px;
-padding:12px;
+padding:14px;
 background:#27ae60;
 color:white;
 border:none;
-border-radius:5px;
+border-radius:6px;
 cursor:pointer;
 font-size:16px;
 width:100%;
+transition:0.2s;
+}
+
+.btn:hover{
+background:#219150;
 }
 
 @media(max-width:600px){
@@ -155,6 +187,11 @@ cursor:pointer;
 
 </div>
 
+<div class="resumo">
+Itens diferentes: <span id="totalItens">0</span> |
+Total de peças: <span id="totalPecas">0</span>
+</div>
+
 <table>
 <thead>
 <tr>
@@ -186,6 +223,12 @@ adicionarCodigo()
 }
 })
 
+function atualizarResumo(){
+document.getElementById("totalItens").innerText = retirada.length
+let total = retirada.reduce((soma,item)=> soma + item.quantidade ,0)
+document.getElementById("totalPecas").innerText = total
+}
+
 function adicionarCodigo(){
 
 let campo=document.getElementById("codigo")
@@ -200,7 +243,6 @@ alert("Produto não encontrado")
 return
 }
 
-// se já existir soma quantidade
 let existente=retirada.find(p=>p.codigo==codigo)
 
 if(existente){
@@ -229,22 +271,41 @@ tabela.innerHTML+=`
 <td>${item.codigo}</td>
 <td>${item.nome}</td>
 <td>
-<input class="qtdInput" type="number" min="1" step="1"
+<div style="display:flex; justify-content:center; align-items:center; gap:5px;">
+<button class="btnQtd btnMenos" onclick="diminuir(${index})">−</button>
+
+<input class="qtdInput" type="number" min="1"
 value="${item.quantidade}"
 onchange="alterarQtd(${index},this.value)">
+
+<button class="btnQtd btnMais" onclick="aumentar(${index})">+</button>
+</div>
 </td>
 <td>
-<button class="remover" onclick="remover(${index})">X</button>
+<button style="background:#e74c3c;color:white;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;" onclick="remover(${index})">X</button>
 </td>
 </tr>
 `
-
 })
 
+atualizarResumo()
 }
 
 function alterarQtd(i,v){
 retirada[i].quantidade=parseInt(v) || 1
+atualizarResumo()
+}
+
+function aumentar(i){
+retirada[i].quantidade++
+render()
+}
+
+function diminuir(i){
+if(retirada[i].quantidade > 1){
+retirada[i].quantidade--
+render()
+}
 }
 
 function remover(i){
@@ -292,47 +353,6 @@ theme:"grid",
 styles:{lineWidth:0.5},
 headStyles:{fillColor:[44,123,229],textColor:255}
 })
-
-let y=doc.lastAutoTable.finalY+10
-
-doc.setFont("helvetica","bold")
-doc.text("RETIRADA",14,y)
-y+=10
-
-doc.setFont("helvetica","normal")
-doc.text("Assinatura Mecânico:",14,y)
-doc.line(60,y,170,y)
-
-y+=15
-doc.text("Responsável Estoque:",14,y)
-doc.line(70,y,170,y)
-
-y+=20
-doc.setFont("helvetica","bold")
-doc.text("DEVOLUÇÃO",14,y)
-
-y+=10
-doc.setFont("helvetica","normal")
-doc.text("Data retorno: ____ / ____ / ______",14,y)
-
-let retorno=retirada.map(i=>[i.codigo,i.nome,""])
-
-doc.autoTable({
-startY:y+5,
-head:[["Código","Produto","Qtd retornada"]],
-body:retorno,
-theme:"grid",
-styles:{lineWidth:0.5},
-headStyles:{fillColor:[44,123,229],textColor:255}
-})
-
-y=doc.lastAutoTable.finalY+10
-doc.text("Assinatura Mecânico:",14,y)
-doc.line(60,y,170,y)
-
-y+=15
-doc.text("Responsável Estoque:",14,y)
-doc.line(70,y,170,y)
 
 let nomeArquivo="retirada_"+mecanico+"_"+data.replaceAll("/","-")+".pdf"
 
