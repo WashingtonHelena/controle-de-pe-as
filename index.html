@@ -83,7 +83,7 @@ text-align:center;
 }
 
 .qtdInput{
-width:70px;
+width:80px;
 text-align:center;
 }
 
@@ -109,11 +109,7 @@ width:100%;
 }
 
 @media(max-width:600px){
-
-h1{
-font-size:18px;
-}
-
+h1{ font-size:18px; }
 }
 
 </style>
@@ -124,17 +120,13 @@ font-size:18px;
 <div class="container">
 
 <div class="top">
-
 <img src="logo_siloking.png" class="logo">
-
 <h1>Controle de Retirada de Peças</h1>
-
 </div>
 
 <div class="inputs">
 
 <select id="mecanico">
-
 <option>ANTONIO</option>
 <option>RENATO</option>
 <option>MAURICIO</option>
@@ -146,15 +138,24 @@ font-size:18px;
 <option>JOSE ROBERTO</option>
 <option>AGNALDO</option>
 <option>PRODUÇÃO</option>
-
 </select>
 
+<div style="display:flex; flex:1; gap:5px;">
 <input id="codigo" placeholder="Bipar código da peça">
+<button type="button" onclick="adicionarCodigo()" style="
+padding:10px 15px;
+background:#2c7be5;
+color:white;
+border:none;
+border-radius:5px;
+font-size:16px;
+cursor:pointer;
+">OK</button>
+</div>
 
 </div>
 
 <table>
-
 <thead>
 <tr>
 <th>Código</th>
@@ -163,9 +164,7 @@ font-size:18px;
 <th></th>
 </tr>
 </thead>
-
 <tbody id="lista"></tbody>
-
 </table>
 
 <button class="btn" onclick="gerarPDF()">GERAR RELATÓRIO PDF</button>
@@ -182,10 +181,17 @@ fetch("produtos_base_completa.json")
 .then(data=>produtos=data)
 
 document.getElementById("codigo").addEventListener("keypress",function(e){
-
 if(e.key==="Enter"){
+adicionarCodigo()
+}
+})
 
-let codigo=this.value.trim()
+function adicionarCodigo(){
+
+let campo=document.getElementById("codigo")
+let codigo=campo.value.trim()
+
+if(!codigo) return
 
 let produto=produtos.find(p=>p.codigo==codigo)
 
@@ -194,19 +200,22 @@ alert("Produto não encontrado")
 return
 }
 
+// se já existir soma quantidade
+let existente=retirada.find(p=>p.codigo==codigo)
+
+if(existente){
+existente.quantidade++
+}else{
 retirada.push({
 codigo:produto.codigo,
 nome:produto.nome,
 quantidade:1
 })
-
-render()
-
-this.value=""
-
 }
 
-})
+render()
+campo.value=""
+}
 
 function render(){
 
@@ -216,24 +225,18 @@ tabela.innerHTML=""
 retirada.forEach((item,index)=>{
 
 tabela.innerHTML+=`
-
 <tr>
-
 <td>${item.codigo}</td>
-
 <td>${item.nome}</td>
-
 <td>
-<input class="qtdInput" type="number" value="${item.quantidade}"
+<input class="qtdInput" type="number" min="1" step="1"
+value="${item.quantidade}"
 onchange="alterarQtd(${index},this.value)">
 </td>
-
 <td>
 <button class="remover" onclick="remover(${index})">X</button>
 </td>
-
 </tr>
-
 `
 
 })
@@ -241,7 +244,7 @@ onchange="alterarQtd(${index},this.value)">
 }
 
 function alterarQtd(i,v){
-retirada[i].quantidade=v
+retirada[i].quantidade=parseInt(v) || 1
 }
 
 function remover(i){
@@ -251,8 +254,12 @@ render()
 
 function gerarPDF(){
 
-const {jsPDF}=window.jspdf
+if(retirada.length===0){
+alert("Nenhuma peça adicionada")
+return
+}
 
+const {jsPDF}=window.jspdf
 let doc=new jsPDF()
 
 let mecanico=document.getElementById("mecanico").value
@@ -264,104 +271,66 @@ doc.rect(0,0,210,30,"F")
 doc.setTextColor(255,255,255)
 doc.setFont("helvetica","bold")
 doc.setFontSize(20)
-
 doc.text("SILOKING DO BRASIL",105,18,{align:"center"})
 
 doc.setFontSize(12)
 doc.text("Controle de Retirada de Peças",105,25,{align:"center"})
 
 doc.setTextColor(0,0,0)
-
 doc.setFont("helvetica","normal")
 
 doc.text("Mecânico: "+mecanico,14,40)
 doc.text("Data retirada: "+data,14,47)
 
-let dados=retirada.map(i=>[
-i.codigo,
-i.nome,
-i.quantidade
-])
+let dados=retirada.map(i=>[i.codigo,i.nome,i.quantidade])
 
 doc.autoTable({
-
 startY:55,
-
 head:[["Código","Produto","Quantidade"]],
-
 body:dados,
-
 theme:"grid",
-
 styles:{lineWidth:0.5},
-
-headStyles:{
-fillColor:[44,123,229],
-textColor:255
-}
-
+headStyles:{fillColor:[44,123,229],textColor:255}
 })
 
 let y=doc.lastAutoTable.finalY+10
 
 doc.setFont("helvetica","bold")
 doc.text("RETIRADA",14,y)
-
 y+=10
 
 doc.setFont("helvetica","normal")
-
 doc.text("Assinatura Mecânico:",14,y)
 doc.line(60,y,170,y)
 
 y+=15
-
 doc.text("Responsável Estoque:",14,y)
 doc.line(70,y,170,y)
 
 y+=20
-
 doc.setFont("helvetica","bold")
 doc.text("DEVOLUÇÃO",14,y)
 
 y+=10
-
 doc.setFont("helvetica","normal")
-
 doc.text("Data retorno: ____ / ____ / ______",14,y)
 
-let retorno=retirada.map(i=>[
-i.codigo,
-i.nome,
-""
-])
+let retorno=retirada.map(i=>[i.codigo,i.nome,""])
 
 doc.autoTable({
-
 startY:y+5,
-
 head:[["Código","Produto","Qtd retornada"]],
-
 body:retorno,
-
 theme:"grid",
-
 styles:{lineWidth:0.5},
-
-headStyles:{
-fillColor:[44,123,229],
-textColor:255
-}
-
+headStyles:{fillColor:[44,123,229],textColor:255}
 })
 
 y=doc.lastAutoTable.finalY+10
-
 doc.text("Assinatura Mecânico:",14,y)
 doc.line(60,y,170,y)
 
 y+=15
-
 doc.text("Responsável Estoque:",14,y)
 doc.line(70,y,170,y)
 
@@ -372,19 +341,14 @@ doc.save(nomeArquivo)
 let pdfBase64 = doc.output('datauristring').split(',')[1]
 
 fetch("https://script.google.com/macros/s/AKfycbwYXvZLTdAW156Smmt-adSTpNUQ4epITnClG1YcZcy1mnjuO_XSjtjTYkeSvzv7QZ-UNw/exec",{
-
 method:"POST",
 mode:"no-cors",
-
 body:JSON.stringify({
-
 pdf:pdfBase64,
 nome:nomeArquivo,
 data:data,
 mecanico:mecanico
-
 })
-
 })
 
 retirada=[]
