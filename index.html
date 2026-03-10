@@ -98,32 +98,6 @@ border:1px solid #ccc;
 border-radius:4px;
 }
 
-.btnQtd{
-padding:6px 10px;
-border:none;
-border-radius:5px;
-cursor:pointer;
-font-weight:bold;
-transition:0.2s;
-}
-
-.btnMais{
-background:#2c7be5;
-color:white;
-}
-
-.btnMenos{
-background:#ccc;
-}
-
-.resumo{
-margin:15px 0;
-padding:10px;
-background:#f1f6ff;
-border-left:5px solid #2c7be5;
-font-weight:bold;
-}
-
 .btn{
 margin-top:15px;
 padding:14px;
@@ -134,6 +108,14 @@ border-radius:6px;
 cursor:pointer;
 font-size:16px;
 width:100%;
+}
+
+.resumo{
+margin:15px 0;
+padding:10px;
+background:#f1f6ff;
+border-left:5px solid #2c7be5;
+font-weight:bold;
 }
 
 </style>
@@ -166,15 +148,7 @@ width:100%;
 
 <div style="display:flex; flex:1; gap:5px;">
 <input id="codigo" placeholder="Bipar código da peça">
-<button type="button" onclick="adicionarCodigo()" style="
-padding:10px 15px;
-background:#2c7be5;
-color:white;
-border:none;
-border-radius:5px;
-font-size:16px;
-cursor:pointer;
-">OK</button>
+<button onclick="adicionarCodigo()" style="padding:10px 15px;background:#2c7be5;color:white;border:none;border-radius:5px;">OK</button>
 </div>
 
 </div>
@@ -212,9 +186,7 @@ fetch("produtos_base_completa.json")
 .then(data=>produtos=data)
 
 document.getElementById("codigo").addEventListener("keypress",function(e){
-if(e.key==="Enter"){
-adicionarCodigo()
-}
+if(e.key==="Enter"){ adicionarCodigo() }
 })
 
 function atualizarResumo(){
@@ -265,17 +237,21 @@ tabela.innerHTML+=`
 <td>${item.codigo}</td>
 <td>${item.nome}</td>
 <td>
-<div style="display:flex; justify-content:center; align-items:center; gap:5px;">
-<button onclick="diminuir(${index})">−</button>
-<input class="qtdInput" type="number" min="1"
+
+<button onclick="diminuir(${index})">-</button>
+
+<input class="qtdInput" type="number"
 value="${item.quantidade}"
 onchange="alterarQtd(${index},this.value)">
+
 <button onclick="aumentar(${index})">+</button>
-</div>
+
 </td>
+
 <td>
-<button style="background:#e74c3c;color:white;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;" onclick="remover(${index})">X</button>
+<button style="background:#e74c3c;color:white;border:none;padding:5px 10px;border-radius:5px;" onclick="remover(${index})">X</button>
 </td>
+
 </tr>
 `
 })
@@ -294,7 +270,7 @@ render()
 }
 
 function diminuir(i){
-if(retirada[i].quantidade > 1){
+if(retirada[i].quantidade>1){
 retirada[i].quantidade--
 render()
 }
@@ -318,8 +294,6 @@ let doc=new jsPDF()
 let mecanico=document.getElementById("mecanico").value
 let observacao=document.getElementById("observacao").value
 let data=new Date().toLocaleDateString()
-
-// ===== TÍTULO =====
 
 doc.setFont("helvetica","bold")
 doc.setFontSize(22)
@@ -347,13 +321,10 @@ doc.text("Mecânico: "+mecanico,14,55)
 doc.text("Data retirada: "+data,14,62)
 doc.text("Máquina / Observação: "+observacao,14,69)
 
-
-// ===== TABELA RETIRADA =====
-
 let dados=retirada.map(i=>[i.codigo,i.nome,i.quantidade])
 
 doc.autoTable({
-startY:75,
+startY:78,
 head:[["Código","Produto","Quantidade"]],
 body:dados,
 theme:"grid",
@@ -362,9 +333,6 @@ headStyles:{fillColor:[0,0,0],textColor:255}
 })
 
 let y=doc.lastAutoTable.finalY+10
-
-
-// ===== ASSINATURAS RETIRADA =====
 
 doc.setFont("helvetica","bold")
 doc.text("RETIRADA",14,y)
@@ -377,9 +345,6 @@ doc.line(60,y,170,y)
 y+=15
 doc.text("Responsável Estoque:",14,y)
 doc.line(70,y,170,y)
-
-
-// ===== DEVOLUÇÃO =====
 
 y+=25
 
@@ -410,16 +375,13 @@ y+=15
 doc.text("Responsável Estoque:",14,y)
 doc.line(70,y,170,y)
 
-
-// ===== SALVAR =====
-
 let nomeArquivo="retirada_"+mecanico+"_"+data.replaceAll("/","-")+".pdf"
 
 doc.save(nomeArquivo)
 
 let pdfBase64 = doc.output('datauristring').split(',')[1]
 
-fetch("https://script.google.com/macros/s/AKfycbw62imIV-EAjak_CLaiFLCrGiKmyxeg8T-LTgiDRjMhTV8Lgw9lhBmMyNFrHR282Lg72g/exec",{
+fetch("https://script.google.com/macros/s/AKfycbx_yu7uFNDLkjtjwigAml30kTSnqkXacpQbXuHPn0zABOq6z8MN_dO40duaBuPRrwMPsg/exec",{
 method:"POST",
 mode:"no-cors",
 body:JSON.stringify({
@@ -433,6 +395,8 @@ observacao:observacao
 
 retirada=[]
 render()
+
+document.getElementById("observacao").value=""
 
 }
 
