@@ -299,79 +299,33 @@ doc.setFont("helvetica","bold")
 doc.setFontSize(22)
 
 let titulo="SILOKING DO BRASIL"
-let larguraTexto = doc.getTextWidth(titulo)
-let xCentro = 105
-
-doc.setFillColor(0,0,0)
-doc.rect(xCentro - (larguraTexto/2), 15, larguraTexto, 6, "F")
-
-doc.setTextColor(0,0,0)
-doc.text(titulo, xCentro, 30, {align:"center"})
-
-doc.setFillColor(0,0,0)
-doc.rect(xCentro - (larguraTexto/2), 33, larguraTexto, 6, "F")
+doc.text(titulo,105,25,{align:"center"})
 
 doc.setFontSize(12)
-doc.text("Controle de Retirada de Peças",105,45,{align:"center"})
+doc.text("Controle de Retirada de Peças",105,35,{align:"center"})
 
 doc.setFont("helvetica","normal")
 doc.setFontSize(11)
 
-doc.text("Mecânico: "+mecanico,14,55)
-doc.text("Data retirada: "+data,14,62)
-doc.text("Máquina / Observação: "+observacao,14,69)
+doc.text("Mecânico: "+mecanico,14,50)
+doc.text("Data retirada: "+data,14,57)
+doc.text("Máquina / Observação: "+observacao,14,64)
 
 let dados=retirada.map(i=>[i.codigo,i.nome,i.quantidade])
 
 doc.autoTable({
-startY:78,
+startY:72,
 head:[["Código","Produto","Quantidade"]],
-body:dados,
-theme:"grid",
-styles:{lineWidth:0.6},
-headStyles:{fillColor:[0,0,0],textColor:255}
+body:dados
 })
 
-let y=doc.lastAutoTable.finalY+10
-
-doc.setFont("helvetica","bold")
-doc.text("RETIRADA",14,y)
-y+=10
-
-doc.setFont("helvetica","normal")
-doc.text("Assinatura Mecânico:",14,y)
-doc.line(60,y,170,y)
-
-y+=15
-doc.text("Responsável Estoque:",14,y)
-doc.line(70,y,170,y)
-
-y+=25
-
-doc.setFont("helvetica","bold")
-doc.text("DEVOLUÇÃO",14,y)
-
-y+=10
-doc.setFont("helvetica","normal")
-doc.text("Data retorno: ____ / ____ / ______",14,y)
-
-let retorno=retirada.map(i=>[i.codigo,i.nome,""])
-
-doc.autoTable({
-startY:y+5,
-head:[["Código","Produto","Qtd retornada"]],
-body:retorno,
-theme:"grid",
-styles:{lineWidth:0.6},
-headStyles:{fillColor:[0,0,0],textColor:255}
-})
-
-y=doc.lastAutoTable.finalY+10
+let y=doc.lastAutoTable.finalY+15
 
 doc.text("Assinatura Mecânico:",14,y)
 doc.line(60,y,170,y)
 
 y+=15
+
 doc.text("Responsável Estoque:",14,y)
 doc.line(70,y,170,y)
 
@@ -395,7 +349,6 @@ observacao:observacao
 
 retirada=[]
 render()
-
 document.getElementById("observacao").value=""
 
 }
