@@ -216,6 +216,80 @@ gap:10px;
 margin-top:10px;
 }
 
+.colapsavel{
+margin-top:15px;
+border:1px solid #d8e7ff;
+border-radius:8px;
+overflow:hidden;
+background:#fff;
+}
+
+.colapsavelHeader{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px 14px;
+background:#f1f6ff;
+cursor:pointer;
+font-weight:bold;
+color:#2c3e50;
+}
+
+.colapsavelHeader span:last-child{
+font-size:18px;
+font-weight:bold;
+}
+
+.colapsavelBody{
+display:none;
+padding:12px;
+background:#fff;
+}
+
+.colapsavel.open .colapsavelBody{
+display:block;
+}
+
+.loadingOverlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.35);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+
+.loadingBox{
+background:white;
+padding:25px 30px;
+border-radius:12px;
+box-shadow:0 8px 25px rgba(0,0,0,0.18);
+text-align:center;
+min-width:260px;
+}
+
+.loadingSpinner{
+width:42px;
+height:42px;
+border:4px solid #dbe7f7;
+border-top:4px solid #2c7be5;
+border-radius:50%;
+margin:0 auto 15px;
+animation:girar 0.8s linear infinite;
+}
+
+.loadingText{
+font-size:16px;
+font-weight:bold;
+color:#2c3e50;
+}
+
+@keyframes girar{
+from{ transform:rotate(0deg); }
+to{ transform:rotate(360deg); }
+}
+
 @media(max-width:700px){
 .acoesGrid{
 grid-template-columns:1fr;
@@ -226,6 +300,13 @@ grid-template-columns:1fr;
 </head>
 
 <body>
+
+<div class="loadingOverlay" id="loadingOverlay">
+  <div class="loadingBox">
+    <div class="loadingSpinner"></div>
+    <div class="loadingText" id="loadingText">Processando...</div>
+  </div>
+</div>
 
 <div class="container">
 
@@ -321,9 +402,14 @@ Total de peças: <span id="totalPecas">0</span>
 <div style="margin-top:6px;"><strong>Status:</strong> <span id="statusAtualTexto">-</span></div>
 </div>
 
-<div class="ordensAbertas">
-<div class="resumo">PRODUÇÕES EM ABERTO</div>
-<div id="listaOrdensAbertas">Carregando...</div>
+<div class="colapsavel" id="boxOrdensAbertas">
+  <div class="colapsavelHeader" onclick="toggleOrdensAbertas()">
+    <span>PRODUÇÕES EM ABERTO</span>
+    <span id="setaOrdensAbertas">+</span>
+  </div>
+  <div class="colapsavelBody" id="conteudoOrdensAbertas">
+    <div id="listaOrdensAbertas">Nenhuma produção em aberto.</div>
+  </div>
 </div>
 
 <div class="inputs" style="margin-top:15px;">
@@ -373,6 +459,19 @@ let ordemAtualStatus = ""
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycby1n8qb32Ls2hK80rfpclpCV37exHWtR_iJI4_kw-vyRZKAvIqqjGRabqlIsVoUUSkQIA/exec"
 
 /* =========================
+   LOADING
+========================= */
+
+function mostrarLoading(texto="Processando..."){
+document.getElementById("loadingText").innerText = texto
+document.getElementById("loadingOverlay").style.display = "flex"
+}
+
+function esconderLoading(){
+document.getElementById("loadingOverlay").style.display = "none"
+}
+
+/* =========================
    CARREGAMENTO INICIAL
 ========================= */
 
@@ -389,6 +488,18 @@ if(e.key==="Enter"){ adicionarCodigoProd() }
 })
 
 listarOrdensAbertas()
+
+/* =========================
+   COLAPSÁVEL
+========================= */
+
+function toggleOrdensAbertas(){
+let box = document.getElementById("boxOrdensAbertas")
+let seta = document.getElementById("setaOrdensAbertas")
+
+box.classList.toggle("open")
+seta.innerText = box.classList.contains("open") ? "−" : "+"
+}
 
 /* =========================
    ABAS
@@ -593,6 +704,8 @@ doc.line(70,y,170,y)
 let nomeArquivo="retirada_"+mecanico+"_"+data.replaceAll("/","-")+".pdf"
 let pdfBase64 = doc.output('datauristring').split(',')[1]
 
+mostrarLoading("Gerando relatório da retirada...")
+
 fetch(URL_SCRIPT,{
 method:"POST",
 body:JSON.stringify({
@@ -612,6 +725,9 @@ document.getElementById("observacao").value=""
 })
 .catch(() => {
 alert("Erro ao enviar retirada para o Apps Script")
+})
+.finally(() => {
+esconderLoading()
 })
 }
 
@@ -712,6 +828,8 @@ alert("Preencha a série da máquina")
 return
 }
 
+mostrarLoading("Abrindo ordem de produção...")
+
 fetch(URL_SCRIPT,{
 method:"POST",
 body:JSON.stringify({
@@ -735,15 +853,23 @@ producao = res.items || []
 
 renderProd()
 atualizarInfoOrdem()
-listarOrdensAbertas()
+listarOrdensAbertas(false)
 alert("Ordem carregada com sucesso")
 })
 .catch(()=>{
 alert("Erro ao comunicar com o Apps Script")
 })
+.finally(()=>{
+esconderLoading()
+})
 }
 
-function listarOrdensAbertas(){
+function listarOrdensAbertas(mostrarMensagem=true){
+
+if(mostrarMensagem){
+mostrarLoading("Carregando produções em aberto...")
+}
+
 fetch(URL_SCRIPT+"?action=list_open_orders")
 .then(r=>r.json())
 .then(res=>{
@@ -777,9 +903,16 @@ box.innerHTML += `
 .catch(()=>{
 document.getElementById("listaOrdensAbertas").innerHTML = "Erro ao carregar ordens em aberto."
 })
+.finally(()=>{
+if(mostrarMensagem){
+esconderLoading()
+}
+})
 }
 
 function abrirOrdemExistente(id){
+mostrarLoading("Abrindo produção em andamento...")
+
 fetch(URL_SCRIPT+"?action=get_order&id="+encodeURIComponent(id))
 .then(r=>r.json())
 .then(res=>{
@@ -799,9 +932,13 @@ document.getElementById("serieProd").value = ordemAtualSerie
 
 renderProd()
 atualizarInfoOrdem()
+alert("Produção aberta com sucesso")
 })
 .catch(()=>{
 alert("Erro ao carregar ordem existente")
+})
+.finally(()=>{
+esconderLoading()
 })
 }
 
@@ -847,6 +984,8 @@ alert("Nenhuma ordem aberta")
 return
 }
 
+mostrarLoading("Salvando produção em andamento...")
+
 fetch(URL_SCRIPT,{
 method:"POST",
 body:JSON.stringify({
@@ -862,10 +1001,13 @@ alert(res.message || "Erro ao salvar produção")
 return
 }
 alert("Produção salva com sucesso")
-listarOrdensAbertas()
+listarOrdensAbertas(false)
 })
 .catch(()=>{
 alert("Erro ao salvar produção")
+})
+.finally(()=>{
+esconderLoading()
 })
 }
 
@@ -935,6 +1077,8 @@ doc.line(70,y,170,y)
 let nomeArquivo="ordem_producao_OP-"+String(ordemAtualId).padStart(4,"0")+"_"+ordemAtualMaquina.replaceAll(" ","_")+"_"+ordemAtualSerie+"_"+data.replaceAll("/","-")+".pdf"
 let pdfBase64 = doc.output('datauristring').split(',')[1]
 
+mostrarLoading("Finalizando produção...")
+
 fetch(URL_SCRIPT,{
 method:"POST",
 body:JSON.stringify({
@@ -959,10 +1103,13 @@ doc.save(nomeArquivo)
 alert("Produção finalizada com sucesso")
 
 novaOrdem()
-listarOrdensAbertas()
+listarOrdensAbertas(false)
 })
 .catch(()=>{
 alert("Erro ao finalizar produção")
+})
+.finally(()=>{
+esconderLoading()
 })
 }
 
