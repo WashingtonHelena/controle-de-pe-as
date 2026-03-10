@@ -49,7 +49,7 @@ font-size:22px;
 .inputs{
 display:flex;
 gap:10px;
-margin-bottom:15px;
+margin-bottom:10px;
 flex-wrap:wrap;
 }
 
@@ -67,6 +67,7 @@ font-size:18px;
 
 #observacao{
 width:100%;
+margin-bottom:10px;
 }
 
 table{
@@ -187,9 +188,7 @@ cursor:pointer;
 
 </div>
 
-<!-- NOVO CAMPO OBSERVAÇÃO -->
-
-<input id="observacao" placeholder="Observação / Máquina (ex: Vagão 3, Mixer 2)">
+<input id="observacao" placeholder="Máquina / Observação (ex: Vagão 2, Mixer 3)">
 
 <div class="resumo">
 Itens diferentes: <span id="totalItens">0</span> |
@@ -202,7 +201,6 @@ Total de peças: <span id="totalPecas">0</span>
 <th>Código</th>
 <th>Produto</th>
 <th>Quantidade</th>
-<th>Máquina</th>
 <th></th>
 </tr>
 </thead>
@@ -238,7 +236,6 @@ function adicionarCodigo(){
 
 let campo=document.getElementById("codigo")
 let codigo=campo.value.trim()
-let obs=document.getElementById("observacao").value.trim()
 
 if(!codigo) return
 
@@ -249,7 +246,7 @@ alert("Produto não encontrado")
 return
 }
 
-let existente=retirada.find(p=>p.codigo==codigo && p.obs==obs)
+let existente=retirada.find(p=>p.codigo==codigo)
 
 if(existente){
 existente.quantidade++
@@ -257,8 +254,7 @@ existente.quantidade++
 retirada.push({
 codigo:produto.codigo,
 nome:produto.nome,
-quantidade:1,
-obs:obs
+quantidade:1
 })
 }
 
@@ -278,9 +274,7 @@ tabela.innerHTML+=`
 <td>${item.codigo}</td>
 <td>${item.nome}</td>
 <td>
-
 <div style="display:flex; justify-content:center; align-items:center; gap:5px;">
-
 <button class="btnQtd btnMenos" onclick="diminuir(${index})">−</button>
 
 <input class="qtdInput" type="number" min="1"
@@ -288,19 +282,11 @@ value="${item.quantidade}"
 onchange="alterarQtd(${index},this.value)">
 
 <button class="btnQtd btnMais" onclick="aumentar(${index})">+</button>
-
 </div>
-
 </td>
-
-<td>${item.obs}</td>
-
 <td>
-
 <button style="background:#e74c3c;color:white;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;" onclick="remover(${index})">X</button>
-
 </td>
-
 </tr>
 `
 })
@@ -341,6 +327,7 @@ const {jsPDF}=window.jspdf
 let doc=new jsPDF()
 
 let mecanico=document.getElementById("mecanico").value
+let observacao=document.getElementById("observacao").value
 let data=new Date().toLocaleDateString()
 
 doc.setFontSize(18)
@@ -350,12 +337,13 @@ doc.text("Controle de Retirada de Peças",105,28,{align:"center"})
 
 doc.text("Mecânico: "+mecanico,14,40)
 doc.text("Data retirada: "+data,14,46)
+doc.text("Máquina / Observação: "+observacao,14,52)
 
-let dados=retirada.map(i=>[i.codigo,i.nome,i.quantidade,i.obs])
+let dados=retirada.map(i=>[i.codigo,i.nome,i.quantidade])
 
 doc.autoTable({
-startY:55,
-head:[["Código","Produto","Quantidade","Máquina"]],
+startY:60,
+head:[["Código","Produto","Quantidade"]],
 body:dados
 })
 
@@ -373,7 +361,7 @@ pdf:pdfBase64,
 nome:nomeArquivo,
 data:data,
 mecanico:mecanico,
-observacao:retirada.map(i=>i.obs).join(" | ")
+observacao:observacao
 })
 })
 
